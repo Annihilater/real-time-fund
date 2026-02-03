@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { useForm, ValidationError } from '@formspree/react';
 import Announcement from "./components/Announcement";
 
@@ -79,10 +79,34 @@ function CloseIcon(props) {
   );
 }
 
+function ExitIcon(props) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function ListIcon(props) {
   return (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
       <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function DragIcon(props) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+      <path d="M4 8h16M4 12h16M4 16h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function FolderPlusIcon(props) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+      <path d="M9 13h6m-3-3v6m-9-4V5a2 2 0 0 1 2-2h4l2 3h6a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -278,6 +302,297 @@ function SuccessModal({ message, onClose }) {
   );
 }
 
+function ConfirmModal({ title, message, onConfirm, onCancel }) {
+  return (
+    <motion.div
+      className="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      onClick={onCancel}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{ zIndex: 10002 }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="glass card modal"
+        style={{ maxWidth: '400px' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="title" style={{ marginBottom: 12 }}>
+          <TrashIcon width="20" height="20" className="danger" />
+          <span>{title}</span>
+        </div>
+        <p className="muted" style={{ marginBottom: 24, fontSize: '14px', lineHeight: '1.6' }}>
+          {message}
+        </p>
+        <div className="row" style={{ gap: 12 }}>
+          <button className="button secondary" onClick={onCancel} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'var(--text)' }}>取消</button>
+          <button className="button danger" onClick={onConfirm} style={{ flex: 1 }}>确定删除</button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function GroupManageModal({ groups, onClose, onSave }) {
+  const [items, setItems] = useState(groups);
+  const [deleteConfirm, setDeleteConfirm] = useState(null); // { id, name }
+
+  const handleReorder = (newOrder) => {
+    setItems(newOrder);
+  };
+
+  const handleRename = (id, newName) => {
+    const truncatedName = (newName || '').slice(0, 8);
+    setItems(prev => prev.map(item => item.id === id ? { ...item, name: truncatedName } : item));
+  };
+
+  const handleDeleteClick = (id, name) => {
+    setDeleteConfirm({ id, name });
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteConfirm) {
+      setItems(prev => prev.filter(item => item.id !== deleteConfirm.id));
+      setDeleteConfirm(null);
+    }
+  };
+
+  const handleConfirm = () => {
+    onSave(items);
+    onClose();
+  };
+
+  return (
+    <motion.div
+      className="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="管理分组"
+      onClick={onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="glass card modal"
+        style={{ maxWidth: '500px', width: '90vw' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="title" style={{ marginBottom: 20, justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <SettingsIcon width="20" height="20" />
+            <span>管理分组</span>
+          </div>
+          <button className="icon-button" onClick={onClose} style={{ border: 'none', background: 'transparent' }}>
+            <CloseIcon width="20" height="20" />
+          </button>
+        </div>
+
+        <div className="group-manage-list-container" style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '4px' }}>
+          {items.length === 0 ? (
+            <div className="empty-state muted" style={{ textAlign: 'center', padding: '40px 0' }}>
+              <div style={{ fontSize: '32px', marginBottom: 12, opacity: 0.5 }}>📂</div>
+              <p>暂无自定义分组</p>
+            </div>
+          ) : (
+            <Reorder.Group axis="y" values={items} onReorder={handleReorder} className="group-manage-list">
+              {items.map((item) => (
+                <Reorder.Item key={item.id} value={item} className="group-manage-item glass">
+                  <div className="drag-handle" style={{ cursor: 'grab', display: 'flex', alignItems: 'center', padding: '0 8px' }}>
+                    <DragIcon width="18" height="18" className="muted" />
+                  </div>
+                  <input
+                    className="input group-rename-input"
+                    value={item.name}
+                    onChange={(e) => handleRename(item.id, e.target.value)}
+                    placeholder="分组名称"
+                    style={{ flex: 1, height: '36px', fontSize: '14px', background: 'rgba(0,0,0,0.2)' }}
+                  />
+                  <button 
+                    className="icon-button danger" 
+                    onClick={() => handleDeleteClick(item.id, item.name)} 
+                    title="删除分组"
+                    style={{ width: '36px', height: '36px', flexShrink: 0 }}
+                  >
+                    <TrashIcon width="16" height="16" />
+                  </button>
+                </Reorder.Item>
+              ))}
+            </Reorder.Group>
+          )}
+        </div>
+
+        <div style={{ marginTop: 24 }}>
+          <button className="button" onClick={handleConfirm} style={{ width: '100%' }}>
+            完成
+          </button>
+        </div>
+      </motion.div>
+
+      <AnimatePresence>
+        {deleteConfirm && (
+          <ConfirmModal
+            title="删除确认"
+            message={`确定要删除分组 "${deleteConfirm.name}" 吗？分组内的基金不会被删除。`}
+            onConfirm={handleConfirmDelete}
+            onCancel={() => setDeleteConfirm(null)}
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+function AddFundToGroupModal({ allFunds, currentGroupCodes, onClose, onAdd }) {
+  const [selected, setSelected] = useState(new Set());
+  
+  // 过滤出未在当前分组中的基金
+  const availableFunds = (allFunds || []).filter(f => !(currentGroupCodes || []).includes(f.code));
+
+  const toggleSelect = (code) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(code)) next.delete(code);
+      else next.add(code);
+      return next;
+    });
+  };
+
+  return (
+    <motion.div
+      className="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="glass card modal"
+        style={{ maxWidth: '500px', width: '90vw' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="title" style={{ marginBottom: 20, justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <PlusIcon width="20" height="20" />
+            <span>添加基金到分组</span>
+          </div>
+          <button className="icon-button" onClick={onClose} style={{ border: 'none', background: 'transparent' }}>
+            <CloseIcon width="20" height="20" />
+          </button>
+        </div>
+
+        <div className="group-manage-list-container" style={{ maxHeight: '50vh', overflowY: 'auto', paddingRight: '4px' }}>
+          {availableFunds.length === 0 ? (
+            <div className="empty-state muted" style={{ textAlign: 'center', padding: '40px 0' }}>
+              <p>所有基金已在该分组中</p>
+            </div>
+          ) : (
+            <div className="group-manage-list">
+              {availableFunds.map((fund) => (
+                <div 
+                  key={fund.code} 
+                  className={`group-manage-item glass ${selected.has(fund.code) ? 'selected' : ''}`}
+                  onClick={() => toggleSelect(fund.code)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className="checkbox" style={{ marginRight: 12 }}>
+                    {selected.has(fund.code) && <div className="checked-mark" />}
+                  </div>
+                  <div className="fund-info" style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600 }}>{fund.name}</div>
+                    <div className="muted" style={{ fontSize: '12px' }}>#{fund.code}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="row" style={{ marginTop: 24, gap: 12 }}>
+          <button className="button secondary" onClick={onClose} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'var(--text)' }}>取消</button>
+          <button 
+            className="button" 
+            onClick={() => onAdd(Array.from(selected))} 
+            disabled={selected.size === 0}
+            style={{ flex: 1 }}
+          >
+            确定 ({selected.size})
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function GroupModal({ onClose, onConfirm }) {
+  const [name, setName] = useState('');
+  return (
+    <motion.div
+      className="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="新增分组"
+      onClick={onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="glass card modal"
+        style={{ maxWidth: '400px' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="title" style={{ marginBottom: 20, justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <PlusIcon width="20" height="20" />
+            <span>新增分组</span>
+          </div>
+          <button className="icon-button" onClick={onClose} style={{ border: 'none', background: 'transparent' }}>
+            <CloseIcon width="20" height="20" />
+          </button>
+        </div>
+        <div className="form-group" style={{ marginBottom: 20 }}>
+          <label className="muted" style={{ display: 'block', marginBottom: 8, fontSize: '14px' }}>分组名称（最多 8 个字）</label>
+          <input
+            className="input"
+            autoFocus
+            placeholder="请输入分组名称..."
+            value={name}
+            onChange={(e) => {
+              const v = e.target.value || '';
+              // 限制最多 8 个字符（兼容中英文），超出部分自动截断
+              setName(v.slice(0, 8));
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && name.trim()) onConfirm(name.trim());
+            }}
+          />
+        </div>
+        <div className="row" style={{ gap: 12 }}>
+          <button className="button secondary" onClick={onClose} style={{ flex: 1, background: 'rgba(255,255,255,0.05)', color: 'var(--text)' }}>取消</button>
+          <button className="button" onClick={() => name.trim() && onConfirm(name.trim())} disabled={!name.trim()} style={{ flex: 1 }}>确定</button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export default function HomePage() {
   const [funds, setFunds] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -298,7 +613,12 @@ export default function HomePage() {
 
   // 自选状态
   const [favorites, setFavorites] = useState(new Set());
+  const [groups, setGroups] = useState([]); // [{ id, name, codes: [] }]
   const [currentTab, setCurrentTab] = useState('all');
+  const [groupModalOpen, setGroupModalOpen] = useState(false);
+  const [groupManageOpen, setGroupManageOpen] = useState(false);
+  const [addFundToGroupOpen, setAddFundToGroupOpen] = useState(false);
+  const [editingGroup, setEditingGroup] = useState(null);
 
   // 排序状态
   const [sortBy, setSortBy] = useState('default'); // default, name, yield, code
@@ -320,6 +640,83 @@ export default function HomePage() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [addResultOpen, setAddResultOpen] = useState(false);
   const [addFailures, setAddFailures] = useState([]);
+  const [groupSelectorFund, setGroupSelectorFund] = useState(null); // { code, rect }
+  const tabsRef = useRef(null);
+
+  // 过滤和排序后的基金列表
+  const displayFunds = funds
+    .filter(f => {
+      if (currentTab === 'all') return true;
+      if (currentTab === 'fav') return favorites.has(f.code);
+      const group = groups.find(g => g.id === currentTab);
+      return group ? group.codes.includes(f.code) : true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'yield') {
+        const valA = typeof a.estGszzl === 'number' ? a.estGszzl : (Number(a.gszzl) || 0);
+        const valB = typeof b.estGszzl === 'number' ? b.estGszzl : (Number(b.gszzl) || 0);
+        return valB - valA;
+      }
+      if (sortBy === 'name') return a.name.localeCompare(b.name, 'zh-CN');
+      if (sortBy === 'code') return a.code.localeCompare(b.code);
+      return 0;
+    });
+
+  // 自动滚动选中 Tab 到可视区域
+  useEffect(() => {
+    if (!tabsRef.current) return;
+    if (currentTab === 'all') {
+      tabsRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+      return;
+    }
+    const activeTab = tabsRef.current.querySelector('.tab.active');
+    if (activeTab) {
+      activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  }, [currentTab]);
+
+  // 鼠标拖拽滚动逻辑
+  const [isDragging, setIsDragging] = useState(false);
+  // Removed startX and scrollLeft state as we use movementX now
+  const [tabsOverflow, setTabsOverflow] = useState(false);
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(false);
+
+  const handleMouseDown = (e) => {
+    if (!tabsRef.current) return;
+    setIsDragging(true);
+  };
+
+  const handleMouseLeaveOrUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging || !tabsRef.current) return;
+    e.preventDefault();
+    tabsRef.current.scrollLeft -= e.movementX;
+  };
+
+  const handleWheel = (e) => {
+    if (!tabsRef.current) return;
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    tabsRef.current.scrollLeft += delta;
+  };
+
+  const updateTabOverflow = () => {
+    if (!tabsRef.current) return;
+    const el = tabsRef.current;
+    setTabsOverflow(el.scrollWidth > el.clientWidth);
+    setCanLeft(el.scrollLeft > 0);
+    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 1);
+  };
+
+  useEffect(() => {
+    updateTabOverflow();
+    const onResize = () => updateTabOverflow();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [groups, funds.length, favorites.size]);
 
   // 成功提示弹窗
   const [successModal, setSuccessModal] = useState({ open: false, message: '' });
@@ -362,6 +759,81 @@ export default function HomePage() {
     });
   };
 
+  const handleAddGroup = (name) => {
+    const newGroup = {
+      id: `group_${Date.now()}`,
+      name,
+      codes: []
+    };
+    const next = [...groups, newGroup];
+    setGroups(next);
+    localStorage.setItem('groups', JSON.stringify(next));
+    setCurrentTab(newGroup.id);
+    setGroupModalOpen(false);
+  };
+
+  const handleRemoveGroup = (id) => {
+    const next = groups.filter(g => g.id !== id);
+    setGroups(next);
+    localStorage.setItem('groups', JSON.stringify(next));
+    if (currentTab === id) setCurrentTab('all');
+  };
+
+  const handleUpdateGroups = (newGroups) => {
+    setGroups(newGroups);
+    localStorage.setItem('groups', JSON.stringify(newGroups));
+    // 如果当前选中的分组被删除了，切换回“全部”
+    if (currentTab !== 'all' && currentTab !== 'fav' && !newGroups.find(g => g.id === currentTab)) {
+      setCurrentTab('all');
+    }
+  };
+
+  const handleAddFundsToGroup = (codes) => {
+    if (!codes || codes.length === 0) return;
+    const next = groups.map(g => {
+      if (g.id === currentTab) {
+        return {
+          ...g,
+          codes: Array.from(new Set([...g.codes, ...codes]))
+        };
+      }
+      return g;
+    });
+    setGroups(next);
+    localStorage.setItem('groups', JSON.stringify(next));
+    setAddFundToGroupOpen(false);
+    setSuccessModal({ open: true, message: `成功添加 ${codes.length} 支基金` });
+  };
+
+  const removeFundFromCurrentGroup = (code) => {
+    const next = groups.map(g => {
+      if (g.id === currentTab) {
+        return {
+          ...g,
+          codes: g.codes.filter(c => c !== code)
+        };
+      }
+      return g;
+    });
+    setGroups(next);
+    localStorage.setItem('groups', JSON.stringify(next));
+  };
+
+  const toggleFundInGroup = (code, groupId) => {
+    const next = groups.map(g => {
+      if (g.id === groupId) {
+        const has = g.codes.includes(code);
+        return {
+          ...g,
+          codes: has ? g.codes.filter(c => c !== code) : [...g.codes, code]
+        };
+      }
+      return g;
+    });
+    setGroups(next);
+    localStorage.setItem('groups', JSON.stringify(next));
+  };
+
   // 按 code 去重，保留第一次出现的项，避免列表重复
   const dedupeByCode = (list) => {
     const seen = new Set();
@@ -397,6 +869,11 @@ export default function HomePage() {
       const savedFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
       if (Array.isArray(savedFavorites)) {
         setFavorites(new Set(savedFavorites));
+      }
+      // 加载分组状态
+      const savedGroups = JSON.parse(localStorage.getItem('groups') || '[]');
+      if (Array.isArray(savedGroups)) {
+        setGroups(savedGroups);
       }
       // 加载视图模式
       const savedViewMode = localStorage.getItem('viewMode');
@@ -751,6 +1228,14 @@ export default function HomePage() {
     setFunds(next);
     localStorage.setItem('funds', JSON.stringify(next));
 
+    // 同步删除分组中的失效代码
+    const nextGroups = groups.map(g => ({
+      ...g,
+      codes: g.codes.filter(c => c !== removeCode)
+    }));
+    setGroups(nextGroups);
+    localStorage.setItem('groups', JSON.stringify(nextGroups));
+
     // 同步删除展开收起状态
     setCollapsedCodes(prev => {
       if (!prev.has(removeCode)) return prev;
@@ -1039,10 +1524,23 @@ export default function HomePage() {
         </div>
 
         <div className="col-12">
-          {funds.length > 0 && (
-            <div className="filter-bar" style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-              {favorites.size > 0 ? (
-                <div className="tabs">
+          <div className="filter-bar" style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+            <div className="tabs-container">
+              <div 
+                className="tabs-scroll-area"
+                data-mask-left={canLeft}
+                data-mask-right={canRight}
+              >
+                <div 
+                  className="tabs" 
+                  ref={tabsRef}
+                  onMouseDown={handleMouseDown}
+                  onMouseLeave={handleMouseLeaveOrUp}
+                  onMouseUp={handleMouseLeaveOrUp}
+                  onMouseMove={handleMouseMove}
+                  onWheel={handleWheel}
+                  onScroll={updateTabOverflow}
+                >
                   <button
                     className={`tab ${currentTab === 'all' ? 'active' : ''}`}
                     onClick={() => setCurrentTab('all')}
@@ -1055,10 +1553,45 @@ export default function HomePage() {
                   >
                     自选 ({favorites.size})
                   </button>
+                  {groups.map(g => (
+                    <button
+                      key={g.id}
+                      className={`tab ${currentTab === g.id ? 'active' : ''}`}
+                      onClick={() => setCurrentTab(g.id)}
+                    >
+                      {g.name} ({g.codes.length})
+                    </button>
+                  ))}
                 </div>
-              ) : <div />}
+              </div>
+              {groups.length > 0 && (
+                <button 
+                  className="icon-button manage-groups-btn" 
+                  onClick={() => setGroupManageOpen(true)}
+                  title="管理分组"
+                >
+                  <SortIcon width="16" height="16" />
+                </button>
+              )}
+              {currentTab !== 'all' && currentTab !== 'fav' && (
+                <button 
+                  className="icon-button" 
+                  onClick={() => setAddFundToGroupOpen(true)}
+                  title="添加基金到此分组"
+                >
+                  <FolderPlusIcon width="16" height="16" />
+                </button>
+              )}
+              <button 
+                className="icon-button add-group-btn" 
+                onClick={() => setGroupModalOpen(true)}
+                title="新增分组"
+              >
+                <PlusIcon width="16" height="16" />
+              </button>
+            </div>
 
-              <div className="sort-group" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="sort-group" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div className="view-toggle" style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '2px' }}>
                   <button
                     className={`icon-button ${viewMode === 'card' ? 'active' : ''}`}
@@ -1105,10 +1638,17 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-          )}
 
-          {funds.length === 0 ? (
-            <div className="glass card empty">尚未添加基金</div>
+          {displayFunds.length === 0 ? (
+            <div className="glass card empty" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px' }}>
+              <div style={{ fontSize: '48px', marginBottom: 16, opacity: 0.5 }}>📂</div>
+              <div className="muted" style={{ marginBottom: 20 }}>{funds.length === 0 ? '尚未添加基金' : '该分组下暂无数据'}</div>
+              {currentTab !== 'all' && currentTab !== 'fav' && funds.length > 0 && (
+                <button className="button" onClick={() => setAddFundToGroupOpen(true)}>
+                  添加基金到此分组
+                </button>
+              )}
+            </div>
           ) : (
             <AnimatePresence mode="wait">
               <motion.div
@@ -1121,19 +1661,7 @@ export default function HomePage() {
               >
                 <div className={viewMode === 'card' ? 'grid col-12' : ''} style={viewMode === 'card' ? { gridColumn: 'span 12', gap: 16 } : {}}>
                   <AnimatePresence mode="popLayout">
-                    {funds
-                      .filter(f => currentTab === 'all' || favorites.has(f.code))
-                      .sort((a, b) => {
-                        if (sortBy === 'yield') {
-                          const valA = typeof a.estGszzl === 'number' ? a.estGszzl : (Number(a.gszzl) || 0);
-                          const valB = typeof b.estGszzl === 'number' ? b.estGszzl : (Number(b.gszzl) || 0);
-                          return valB - valA;
-                        }
-                        if (sortBy === 'name') return a.name.localeCompare(b.name, 'zh-CN');
-                        if (sortBy === 'code') return a.code.localeCompare(b.code);
-                        return 0; // default order is the order in the array
-                      })
-                      .map((f) => (
+                    {displayFunds.map((f) => (
                       <motion.div
                         layout="position"
                         key={f.code}
@@ -1147,16 +1675,29 @@ export default function HomePage() {
                         {viewMode === 'list' ? (
                           <>
                             <div className="table-cell name-cell">
-                              <button
-                                className={`icon-button fav-button ${favorites.has(f.code) ? 'active' : ''}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleFavorite(f.code);
-                                }}
-                                title={favorites.has(f.code) ? "取消自选" : "添加自选"}
-                              >
-                                <StarIcon width="18" height="18" filled={favorites.has(f.code)} />
-                              </button>
+                              {currentTab !== 'all' && currentTab !== 'fav' ? (
+                                <button
+                                  className="icon-button fav-button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeFundFromCurrentGroup(f.code);
+                                  }}
+                                  title="从当前分组移除"
+                                >
+                                  <ExitIcon width="18" height="18" style={{ transform: 'rotate(180deg)' }} />
+                                </button>
+                              ) : (
+                                <button
+                                  className={`icon-button fav-button ${favorites.has(f.code) ? 'active' : ''}`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleFavorite(f.code);
+                                  }}
+                                  title={favorites.has(f.code) ? "取消自选" : "添加自选"}
+                                >
+                                  <StarIcon width="18" height="18" filled={favorites.has(f.code)} />
+                                </button>
+                              )}
                               <div className="title-text">
                                 <span className="name-text">{f.name}</span>
                                 <span className="muted code-text">#{f.code}</span>
@@ -1173,7 +1714,18 @@ export default function HomePage() {
                             <div className="table-cell text-right time-cell">
                               <span className="muted" style={{ fontSize: '12px' }}>{f.gztime || f.time || '-'}</span>
                             </div>
-                            <div className="table-cell text-center action-cell">
+                            <div className="table-cell text-center action-cell" style={{ gap: 4 }}>
+                              <button
+                                className={`icon-button ${groups.some(g => g.codes.includes(f.code)) ? 'active' : ''}`}
+                                onClick={(e) => {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  setGroupSelectorFund({ code: f.code, rect });
+                                }}
+                                title="管理分组"
+                                style={{ width: '28px', height: '28px' }}
+                              >
+                                <FolderPlusIcon width="14" height="14" />
+                              </button>
                               <button
                                 className="icon-button danger"
                                 onClick={() => removeFund(f.code)}
@@ -1209,13 +1761,27 @@ export default function HomePage() {
                                 <span>估值时间</span>
                                 <strong>{f.gztime || f.time || '-'}</strong>
                               </div>
-                              <button
-                                className="icon-button danger"
-                                onClick={() => removeFund(f.code)}
-                                title="删除"
-                              >
-                                <TrashIcon width="18" height="18" />
-                              </button>
+                              <div className="row" style={{ gap: 4 }}>
+                                <button
+                                  className={`icon-button ${groups.some(g => g.codes.includes(f.code)) ? 'active' : ''}`}
+                                  onClick={(e) => {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    setGroupSelectorFund({ code: f.code, rect });
+                                  }}
+                                  title="管理分组"
+                                  style={{ width: '28px', height: '28px' }}
+                                >
+                                  <FolderPlusIcon width="14" height="14" />
+                                </button>
+                                <button
+                                  className="icon-button danger"
+                                  onClick={() => removeFund(f.code)}
+                                  title="删除"
+                                  style={{ width: '28px', height: '28px' }}
+                                >
+                                  <TrashIcon width="14" height="14" />
+                                </button>
+                              </div>
                             </div>
                           </div>
 
@@ -1333,6 +1899,106 @@ export default function HomePage() {
             failures={addFailures}
             onClose={() => setAddResultOpen(false)}
           />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {addFundToGroupOpen && (
+          <AddFundToGroupModal
+            allFunds={funds}
+            currentGroupCodes={groups.find(g => g.id === currentTab)?.codes || []}
+            onClose={() => setAddFundToGroupOpen(false)}
+            onAdd={handleAddFundsToGroup}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {groupManageOpen && (
+          <GroupManageModal
+            groups={groups}
+            onClose={() => setGroupManageOpen(false)}
+            onSave={handleUpdateGroups}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {groupModalOpen && (
+          <GroupModal
+            onClose={() => setGroupModalOpen(false)}
+            onConfirm={handleAddGroup}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {groupSelectorFund && (
+          <div 
+            className="modal-overlay" 
+            style={{ background: 'transparent' }}
+            onClick={() => setGroupSelectorFund(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: -10 }}
+              className="glass card group-selector-popup"
+              style={{
+                position: 'fixed',
+                left: groupSelectorFund.rect.left - 160,
+                top: groupSelectorFund.rect.top + 35,
+                width: '200px',
+                zIndex: 10001,
+                padding: '8px',
+                maxHeight: '240px',
+                overflowY: 'auto'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="muted" style={{ fontSize: '12px', padding: '4px 8px', marginBottom: 4 }}>选择分组</div>
+              {groups.length === 0 ? (
+                <div className="muted" style={{ padding: '8px', fontSize: '13px' }}>暂无自定义分组</div>
+              ) : (
+                <div className="group-list">
+                  {groups.map(g => (
+                    <div 
+                      key={g.id} 
+                      className={`group-item ${g.codes.includes(groupSelectorFund.code) ? 'selected' : ''}`}
+                      onClick={() => toggleFundInGroup(groupSelectorFund.code, g.id)}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        transition: 'background 0.2s ease'
+                      }}
+                    >
+                      <span>{g.name}</span>
+                      {g.codes.includes(groupSelectorFund.code) && (
+                        <div className="checked-mark" style={{ width: '8px', height: '4px' }} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div style={{ borderTop: '1px solid var(--border)', marginTop: 4, paddingTop: 4 }}>
+                <button 
+                  className="tab" 
+                  style={{ width: '100%', textAlign: 'left', padding: '8px 12px', fontSize: '13px' }}
+                  onClick={() => {
+                    setGroupSelectorFund(null);
+                    setGroupModalOpen(true);
+                  }}
+                >
+                  + 新增分组
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 

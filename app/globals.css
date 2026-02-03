@@ -383,12 +383,12 @@ body {
 
 .tabs {
   display: flex;
-  gap: 8px;
-  padding: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  gap: 4px;
+  padding: 4px 0;
+  background: transparent;
+  border-radius: 0;
   width: fit-content;
-  backdrop-filter: blur(8px);
+  backdrop-filter: none;
 }
 
 .card.list-mode {
@@ -522,7 +522,7 @@ body {
   }
   .tabs {
     width: 100%;
-    justify-content: center;
+    justify-content: flex-start; /* 移动端改为左对齐 */
     background: transparent;
     border-radius: 0;
     backdrop-filter: none;
@@ -531,7 +531,7 @@ body {
 }
 
 .tab {
-  padding: 8px 20px;
+  padding: 0 20px;
   border-radius: 8px;
   border: none;
   background: transparent;
@@ -540,6 +540,10 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  height: 32px;
+  line-height: 32px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .tab:hover {
@@ -801,4 +805,189 @@ body {
 .add-fund-section {
   position: relative;
   z-index: 41;
+}
+
+.group-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.group-item.selected {
+  background: rgba(34, 211, 238, 0.1);
+  color: var(--primary);
+}
+
+.tabs-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  max-width: 100%;
+  flex: 1;
+  min-width: 0;
+}
+
+.tabs-scroll-area {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  /* 动态遮罩，通过 data-mask-* 属性控制 */
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+.tabs-scroll-area[data-mask-left="true"][data-mask-right="true"] {
+  mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent);
+}
+
+.tabs-scroll-area[data-mask-left="true"][data-mask-right="false"] {
+  mask-image: linear-gradient(to right, transparent, black 40px, black);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 40px, black);
+}
+
+.tabs-scroll-area[data-mask-left="false"][data-mask-right="true"] {
+  mask-image: linear-gradient(to right, black, black calc(100% - 40px), transparent);
+  -webkit-mask-image: linear-gradient(to right, black, black calc(100% - 40px), transparent);
+}
+
+.tabs {
+  display: flex;
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 4px;
+  padding: 4px 0; /* 移除左右内边距，由 mask 和 scroll 行为控制 */
+  scroll-behavior: smooth;
+  scrollbar-width: none; /* Firefox */
+  cursor: grab;
+  user-select: none;
+}
+
+.tabs::after {
+  content: "";
+  flex: 0 0 16px; /* 末尾留一点空隙，避免贴边 */
+}
+
+.tabs:active {
+  cursor: grabbing;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* 管理分组弹窗列表 */
+.group-manage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.group-manage-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.group-manage-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--primary);
+}
+
+.group-manage-item.selected {
+  background: rgba(34, 211, 238, 0.1);
+  border-color: var(--primary);
+}
+
+.group-manage-item.selected .checkbox {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.group-rename-input {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  font-weight: 500;
+}
+
+.group-rename-input:focus {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.add-group-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.add-group-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.tabs-nav-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.tabs-nav-btn:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.tabs-nav-btn.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.tabs-fixed {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.group-selector-popup {
+  background: rgba(15, 23, 42, 0.95) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+  .tabs-container {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+  
+  .tabs {
+    max-width: none !important;
+  }
 }
