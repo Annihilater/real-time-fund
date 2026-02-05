@@ -36,7 +36,7 @@ cd deploy
 ./start.sh
 ```
 
-访问 [http://localhost:3000](http://localhost:3000) 查看效果。
+访问 [http://localhost:9428](http://localhost:9428) 查看效果。
 
 #### 构建自己的镜像
 
@@ -72,7 +72,7 @@ cd scripts
    npm run dev
    ```
 
-   访问 [http://localhost:3000](http://localhost:3000) 查看效果。
+   访问 [http://localhost:9428](http://localhost:9428) 查看效果。
 
 ### 方式三：构建与部署
 

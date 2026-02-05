@@ -92,7 +92,7 @@ cd deploy
 ./start.sh
 
 # 3. 访问应用
-open http://localhost:3000
+open http://localhost:9428
 ```
 
 ### 场景 2：开发者自定义镜像
@@ -144,7 +144,7 @@ cd ../deploy
 
 ```yaml
 ports:
-  - "8080:3000" # 使用 8080 端口
+  - "8080:9428" # 使用 8080 端口
 ```
 
 ### Q2: 如何查看日志？
@@ -192,7 +192,7 @@ server {
     ssl_certificate_key /path/to/key.pem;
 
     location / {
-        proxy_pass http://localhost:3000;
+        proxy_pass http://localhost:9428;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }

@@ -29,7 +29,7 @@ cd deploy
 ./start.sh
 ```
 
-服务启动后，访问 http://localhost:3000
+服务启动后，访问 http://localhost:9428
 
 ### 停止服务
 
@@ -77,11 +77,11 @@ cd deploy
 
 ### 端口配置
 
-默认端口为 3000，如需修改，请编辑 `docker-compose.yml`：
+默认端口为 9428，如需修改，请编辑 `docker-compose.yml`：
 
 ```yaml
 ports:
-  - "YOUR_PORT:3000"
+  - "YOUR_PORT:9428"
 ```
 
 ### 环境变量
@@ -91,7 +91,7 @@ ports:
 ```yaml
 environment:
   - NODE_ENV=production
-  - PORT=3000
+  - PORT=9428
   - YOUR_VAR=value
 ```
 
@@ -131,7 +131,7 @@ docker images klause/real-time-fund
 
 3. 检查端口是否被占用：
    ```bash
-   lsof -i :3000
+   lsof -i :9428
    ```
 
 ### 服务运行缓慢
@@ -155,7 +155,7 @@ docker images klause/real-time-fund
 
 2. 测试端口连接：
    ```bash
-   curl http://localhost:3000
+   curl http://localhost:9428
    ```
 
 ## 📝 注意事项

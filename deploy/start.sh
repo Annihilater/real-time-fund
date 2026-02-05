@@ -30,7 +30,7 @@ sleep 5
 if docker-compose ps | grep -q "Up"; then
     echo "✅ 服务启动成功！"
     echo ""
-    echo "📍 访问地址: http://localhost:3000"
+    echo "📍 访问地址: http://localhost:9428"
     echo "📊 查看日志: ./logs.sh"
     echo "📈 查看状态: ./status.sh"
 else

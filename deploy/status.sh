@@ -33,8 +33,8 @@ if docker-compose ps | grep -q "Up"; then
     # 测试服务连接
     echo ""
     echo "🔍 服务连接测试:"
-    if curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 | grep -q "200"; then
-        echo "✅ 服务可访问: http://localhost:3000"
+    if curl -s -o /dev/null -w "%{http_code}" http://localhost:9428 | grep -q "200"; then
+        echo "✅ 服务可访问: http://localhost:9428"
     else
         echo "⚠️  服务端口已开放，但可能尚未完全就绪"
     fi
