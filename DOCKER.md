@@ -2,7 +2,7 @@
 
 ## 📁 文件结构
 
-```
+```bash
 real-time-fund/
 ├── Dockerfile                 # Docker 镜像定义
 ├── .dockerignore             # Docker 构建排除文件
