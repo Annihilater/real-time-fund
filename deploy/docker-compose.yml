@@ -1,0 +1,21 @@
+services:
+  real-time-fund:
+    image: klause/real-time-fund:latest
+    container_name: real-time-fund
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    networks:
+      - fund-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    labels:
+      - "com.docker.compose.project=real-time-fund"
+
+networks:
+  fund-network:
+    driver: bridge
