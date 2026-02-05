@@ -25,33 +25,65 @@
 
 ## 🚀 快速开始
 
-### 本地开发
+### 方式一：Docker 部署（推荐）
+
+使用 Docker 可以快速部署到生产环境，无需安装 Node.js 等依赖。
+
+#### 使用预构建镜像
+
+```bash
+cd deploy
+./start.sh
+```
+
+访问 [http://localhost:3000](http://localhost:3000) 查看效果。
+
+#### 构建自己的镜像
+
+```bash
+# 构建多平台镜像并推送到 Docker Hub
+cd scripts
+./build.sh
+
+# 或指定版本号
+./build.sh v1.0.0
+```
+
+更多 Docker 部署说明请查看 [deploy/README.md](deploy/README.md)
+
+### 方式二：本地开发
 
 1. 克隆仓库：
+
    ```bash
    git clone https://github.com/hzm0321/real-time-fund.git
    cd real-time-fund
    ```
 
 2. 安装依赖：
+
    ```bash
    npm install
    ```
 
 3. 运行开发服务器：
+
    ```bash
    npm run dev
    ```
+
    访问 [http://localhost:3000](http://localhost:3000) 查看效果。
 
-### 构建与部署
+### 方式三：构建与部署
 
 本项目已配置 GitHub Actions。每次推送到 `main` 分支时，会自动执行构建并部署到 GitHub Pages。
 
 若要手动构建：
+
 ```bash
 npm run build
 ```
+
 静态文件将生成在 `out` 目录下。
 
 ## 📖 使用说明
@@ -76,4 +108,5 @@ npm run build
 完整协议文本见仓库根目录 [LICENSE](./LICENSE) 文件，或 [GNU AGPL v3 官方说明](https://www.gnu.org/licenses/agpl-3.0.html)。
 
 ---
+
 Made by [hzm](https://github.com/hzm0321)
